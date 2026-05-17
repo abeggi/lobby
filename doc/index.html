@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Lobby — Esplora la tua libreria Jellyfin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #111827; --surface: #1f2937; --surface2: #374151;
+      --border: #4b5563; --text: #f3f4f6; --text2: #d1d5db;
+      --text3: #9ca3af; --muted: #6b7280; --accent: #6366f1;
+      --accent-hover: #818cf8; --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; min-height: 100vh;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Hero */
+    .hero {
+      padding: 100px 0 80px;
+      background: linear-gradient(180deg, #1e1b4b 0%, var(--bg) 100%);
+      text-align: center;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 7rem);
+      letter-spacing: 4px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: 1.2rem; color: var(--text2);
+      max-width: 600px; margin: 0 auto 32px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-block; padding: 12px 32px;
+      border-radius: 8px; font-weight: 600; font-size: 0.95rem;
+      text-decoration: none; transition: .2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent; color: var(--text); border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    section h2 {
+      font-size: 1.8rem; font-weight: 700; margin-bottom: 12px;
+    }
+    section .subtitle { color: var(--text3); margin-bottom: 48px; }
+
+    /* Features grid */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .feature-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; transition: .2s;
+    }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .feature-card .icon { font-size: 1.8rem; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { color: var(--text3); font-size: 0.9rem; line-height: 1.5; }
+
+    /* Screenshot */
+    .screenshot {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .screenshot img {
+      width: 100%; height: auto; display: block;
+    }
+    .screenshot figcaption {
+      padding: 16px 24px; color: var(--text3); font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Stack */
+    .stack-list {
+      display: flex; flex-wrap: wrap; gap: 10px; list-style: none;
+    }
+    .stack-list li {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 8px 16px; border-radius: 20px;
+      font-size: 0.85rem; color: var(--text2);
+    }
+    .stack-list li strong { color: var(--accent); }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border); padding: 32px 0;
+      text-align: center; color: var(--muted); font-size: 0.85rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .hero { padding: 60px 0 40px; }
+      section { padding: 48px 0; }
+      .btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <h1>LOBBY</h1>
+    <p>Un frontend FastAPI proxy per navigare la libreria del tuo server Jellyfin. Leggero, scuro, senza fronzoli.</p>
+    <div class="btn-group" style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+      <a href="https://github.com/abeggi/lobby" class="btn btn-primary" target="_blank">ℹ️ Codice su GitHub</a>
+      <a href="#features" class="btn btn-outline">Funzionalità</a>
+    </div>
+  </div>
+</section>
+
+<!-- Screenshot -->
+<section style="padding-top:0;">
+  <div class="container">
+    <figure class="screenshot">
+      <img src="https://raw.githubusercontent.com/abeggi/lobby/refs/heads/main/doc/film.png"
+           alt="Schermata di navigazione film in Lobby"
+           loading="lazy">
+      <figcaption>Navigazione della libreria film — filtri, poster e dettagli a portata di click.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <h2>Funzionalità</h2>
+    <p class="subtitle">Tutto quello che serve per esplorare la tua mediateca, niente di più.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="icon">🎬</div>
+        <h3>Film e Serie</h3>
+        <p>Naviga la libreria completa del tuo Jellyfin con pagine dedicate per film e serie TV.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔍</div>
+        <h3>Filtri avanzati</h3>
+        <p>Filtra per anno, ordina per data e cerca per titolo. Trovi quello che cerchi in un click.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📄</div>
+        <h3>Pagina dettaglio</h3>
+        <p>Poster, backdrop, logo, cast, link a trailer, TMDB, TVDB e IMDb. Tutto in una pagina.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🖼️</div>
+        <h3>Proxy immagini</h3>
+        <p>Le immagini passano dal backend: la API key di Jellyfin resta nascosta dal browser. Cache 24h inclusa.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📱</div>
+        <h3>Responsive</h3>
+        <p>Layout fluido con sidebar collassabile. Funziona su desktop, tablet e telefono.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌙</div>
+        <h3>Tema scuro</h3>
+        <p>Accento indaco su sfondo gray-900. Solo dark mode, senza compromessi.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stack -->
+<section style="background: var(--surface);">
+  <div class="container">
+    <h2>Stack tecnico</h2>
+    <p class="subtitle">Backend Python, frontend vanilla. Nessun framework inutile.</p>
+    <ul class="stack-list">
+      <li><strong>Backend:</strong> FastAPI</li>
+      <li><strong>HTTP:</strong> httpx</li>
+      <li><strong>Server:</strong> uvicorn</li>
+      <li><strong>Frontend:</strong> Vanilla HTML/CSS/JS</li>
+      <li><strong>Python:</strong> 3.12+</li>
+      <li><strong>Cache:</strong> LocalStorage (60min)</li>
+      <li><strong>Proxy:</strong> Immagini con cache 24h</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Quick start -->
+<section>
+  <div class="container">
+    <h2>Avvio rapido</h2>
+    <p class="subtitle">Clona, configura, avvia. In un minuto sei online.</p>
+    <div style="background: #0f172a; border-radius: var(--radius); padding: 24px; font-family: 'Courier New', monospace; font-size: 0.85rem; line-height: 1.8; color: #e2e8f0;">
+      <span style="color:#6366f1;">$</span> git clone https://github.com/abeggi/lobby<br>
+      <span style="color:#6366f1;">$</span> cd lobby<br>
+      <span style="color:#6366f1;">$</span> python3 -m venv .venv<br>
+      <span style="color:#6366f1;">$</span> .venv/bin/pip install -r requirements.txt<br>
+      <span style="color:#6366f1;">$</span> cp .env.sample .env<br>
+      <span style="color:#10b981;"># modifica .env con i tuoi dati Jellyfin</span><br>
+      <span style="color:#6366f1;">$</span> .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8080
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>Lobby — progetto aperto da <a href="https://github.com/abeggi" style="color:var(--accent);text-decoration:none;">Andrea Beggi</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
