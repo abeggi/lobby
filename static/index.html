@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Lobby</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:            #111827;
+  --surface:       #1f2937;
+  --surface2:      #374151;
+  --border:        #4b5563;
+  --separator:     #374151;
+  --text:          #f3f4f6;
+  --text2:         #d1d5db;
+  --text3:         #9ca3af;
+  --muted:         #6b7280;
+  --accent:        #6366f1;
+  --accent-hover:  #4f46e5;
+  --accent-active: #4338ca;
+  --green:         #22c55e;
+  --red:           #ef4444;
+  --yellow:        #eab308;
+  --blue:          #3b82f6;
+  --brand-from:    #818cf8;
+  --brand-to:      #c084fc;
+  --radius:        8px;
+  --sidebar-w:     11rem;
+  --header-h:      56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+#app { display: flex; min-height: 100vh; }
+
+/* ── Detail mode hides sidebar ── */
+#app.detail-mode #sidebar { display: none; }
+#app.detail-mode #sidebar-overlay { display: none; }
+#app.detail-mode #main { margin-left: 0; }
+
+/* ── Sidebar ── */
+#sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #1f2937, #131928);
+  border-right: 1px solid var(--separator);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 50;
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+}
+
+.sidebar-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  padding: 14px 16px 12px;
+  background: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  border-bottom: 1px solid var(--separator);
+  cursor: pointer;
+  border: none;
+  text-align: center;
+  width: 100%;
+}
+
+.sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 12px; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,.06); }
+.nav-item.active {
+  color: var(--text);
+  background: rgba(99,102,241,.15);
+  font-weight: 700;
+  border-left: 3px solid var(--accent);
+  padding-left: 11px;
+}
+.nav-item.active svg { color: var(--accent); }
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+#sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 49;
+  background: rgba(0,0,0,.5);
+  opacity: 0;
+  transition: opacity .2s;
+}
+#sidebar-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+/* ── Main ── */
+#main {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  min-width: 0;
+}
+
+#menu-btn {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  color: var(--text2); padding: 4px;
+}
+#menu-btn svg { width: 22px; height: 22px; }
+
+header {
+  height: var(--header-h);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--separator);
+  background: rgba(17,24,39,.92);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.spacer { flex: 1; }
+
+.search-wrap { position: relative; }
+.search-wrap svg {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; color: var(--muted); pointer-events: none;
+}
+#search {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 14px 7px 32px;
+  font-family: inherit;
+  font-size: 16px; color: var(--text);
+  width: 180px; transition: width .3s, border-color .2s;
+  outline: none;
+}
+#search::placeholder { color: var(--muted); }
+#search:focus { width: 240px; border-color: var(--accent); }
+
+#search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface2);
+  color: var(--text3);
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  font-size: 18px;
+  font-weight: 700;
+}
+#search-clear:hover { color: var(--text); }
+
+/* ── Filter bar ── */
+#filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--separator);
+  background: var(--bg);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-right: 4px;
+}
+
+.filter-group input[type="number"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  width: 90px;
+  -moz-appearance: textfield;
+}
+.filter-group input[type="number"]::-webkit-outer-spin-button,
+.filter-group input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.filter-group input[type="number"]:focus { border-color: var(--accent); }
+.filter-group input[type="number"]::placeholder { color: var(--muted); }
+
+.filter-group select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 24px 5px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%239ca3af'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  min-width: 140px;
+}
+.filter-group select:focus { border-color: var(--accent); }
+.filter-group select.filtered { border-color: var(--accent); color: var(--accent); }
+
+#count-badge {
+  font-size: 12px;
+  color: var(--text3);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ── Spinner ── */
+#spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 120px 20px;
+  width: 100%;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--surface2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── States ── */
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 14px;
+  color: var(--text3);
+  text-align: center;
+}
+.state-box svg { width: 36px; height: 36px; opacity: .4; }
+.state-box p { font-size: 14px; }
+
+.state-box button {
+  margin-top: 4px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.state-box button:hover { background: var(--accent-hover); }
+
+/* ── Grid ── */
+#grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px;
+  padding: 24px 28px;
+}
+
+.card {
+  cursor: pointer;
+  position: relative;
+  transition: transform .2s cubic-bezier(.25,.46,.45,.94);
+  will-change: transform;
+}
+.card:hover { transform: scale(1.05); z-index: 5; }
+
+.card-poster {
+  aspect-ratio: 2/3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  position: relative;
+}
+.card-poster img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+  transition: filter .2s;
+}
+.card:hover .card-poster img { filter: brightness(.6); }
+
+.card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.8) 0%, transparent 45%);
+  opacity: 0; transition: opacity .2s;
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  align-items: flex-end;
+}
+.card:hover .card-overlay { opacity: 1; }
+
+.card-overlay .card-title-overlay {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+  line-height: 1.3;
+}
+
+.poster-placeholder {
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center; justify-content: center;
+  font-size: 11px; color: var(--text3); text-align: center;
+  padding: 8px; line-height: 1.4;
+}
+
+.card-info { margin-top: 8px; }
+.card-title {
+  font-size: 12px; font-weight: 500;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.card-year { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── Detail page ── */
+#page-detail header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 20;
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+#back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(17,24,39,.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.1);
+  cursor: pointer;
+  color: var(--text2);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all .15s;
+  min-width: 44px;
+  min-height: 44px;
+}
+#back-btn:hover { color: var(--text); background: rgba(17,24,39,.85); }
+#back-btn svg { width: 16px; height: 16px; }
+
+#detail-hero {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--header-h) + 24px) 28px 48px;
+  overflow: hidden;
+}
+
+#detail-backdrop {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center top;
+  z-index: 0;
+}
+#detail-backdrop::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(17,24,39,.6) 0%, rgba(17,24,39,.3) 50%, var(--bg) 100%);
+}
+
+#detail-header {
+  position: relative; z-index: 1;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+#detail-poster {
+  flex-shrink: 0;
+  width: 8rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  background: var(--surface);
+  aspect-ratio: 8/13;
+}
+#detail-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#detail-poster .poster-placeholder { font-size: 12px; }
+
+#detail-info { flex: 1; min-width: 0; }
+
+#detail-logo-img {
+  max-width: 320px;
+  max-height: 140px;
+  object-fit: contain;
+  display: block;
+  margin-bottom: 12px;
+}
+
+#detail-title {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+#detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--text2);
+}
+
+.detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.detail-badge.cert {
+  border: 1px solid var(--text3);
+  color: var(--text3);
+  padding: 3px 8px;
+}
+.detail-badge.rating { color: var(--yellow); }
+.detail-badge.rating svg { width: 13px; height: 13px; fill: var(--yellow); }
+.detail-badge.year { color: var(--text); font-weight: 600; }
+.detail-badge.runtime { color: var(--text2); }
+.detail-badge.seasons { color: var(--text2); }
+
+#detail-trailer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  transition: background .15s;
+  text-decoration: none;
+}
+#detail-trailer-btn:hover { background: var(--accent-hover); }
+#detail-trailer-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+#detail-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.detail-genre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13px;
+  color: var(--text3);
+}
+
+#detail-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 28px 48px;
+}
+
+#detail-overview h2,
+#detail-facts h2,
+#detail-cast h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+#detail-plot {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text3);
+  max-width: 70ch;
+}
+
+#detail-facts-list {
+  display: flex;
+  flex-direction: column;
+}
+.fact-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--separator);
+  font-size: 13px;
+}
+.fact-row:last-child { border-bottom: none; }
+.fact-label { color: var(--text3); }
+.fact-value { color: var(--text2); font-weight: 500; text-align: right; }
+
+/* ── Cast grid ── */
+#detail-cast {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  min-width: 0;
+}
+
+.cast-carousel-wrap {
+  position: relative;
+}
+
+#cast-grid {
+  display: flex;
+  overflow-x: auto;
+  gap: 14px;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+#cast-grid::-webkit-scrollbar { display: none; }
+
+.cast-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface2);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .2s, background .2s;
+  padding: 0;
+}
+.cast-carousel-wrap:hover .cast-arrow { opacity: 1; }
+.cast-arrow:hover { background: var(--accent); color: #fff; }
+.cast-arrow svg { width: 18px; height: 18px; }
+.cast-arrow-left  { left: -18px; }
+.cast-arrow-right { right: -18px; }
+
+.cast-card {
+  flex-shrink: 0;
+  width: 80px;
+  text-align: center;
+}
+
+
+
+.cast-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 4px;
+  background: var(--surface);
+}
+
+.cast-ph-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text3);
+}
+
+.cast-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  line-height: 1.15;
+}
+
+.cast-role {
+  font-size: 10px;
+  color: var(--text3);
+  line-height: 1.15;
+  margin-top: 1px;
+}
+
+/* ── Footer ── */
+#footer {
+  text-align: center;
+  padding: 32px;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* ── Progress bar ── */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent);
+  z-index: 999;
+  width: 0;
+  opacity: 0;
+  transition: width .3s, opacity .3s;
+  pointer-events: none;
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.card { animation: fadeIn .3s ease both; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  #app { display: block; }
+  #sidebar {
+    position: fixed;
+    top: 0;
+    left: calc(-1 * var(--sidebar-w));
+    height: 100vh;
+    z-index: 50;
+    transition: left .25s cubic-bezier(.4,0,.2,1);
+  }
+  #sidebar.open { left: 0; }
+  #sidebar-overlay.open { display: block; }
+  #main { margin-left: 0; width: 100%; overflow-x: hidden; }
+  #menu-btn { display: block; }
+  #detail-header { flex-direction: column; text-align: center; }
+  #detail-poster { width: 7rem; }
+  #detail-title { font-size: 1.5rem; }
+  #detail-logo-img { margin: 0 auto 12px; }
+  #detail-meta { justify-content: center; }
+  #detail-genres { justify-content: center; }
+  #detail-body { grid-template-columns: 1fr; }
+  .cast-arrow { display: none; }
+}
+
+@media (max-width: 600px) {
+  .search-wrap { flex: 1; min-width: 0; overflow: hidden; }
+  #search { width: 100%; transition: border-color .2s; }
+  #search:focus { width: 100%; }
+  #grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 16px; }
+  #filter-bar { padding: 10px 16px; gap: 10px; flex-direction: column; align-items: stretch; }
+  .filter-group { flex-wrap: wrap; }
+  .filter-group select { width: 100%; }
+  #count-badge { margin-left: 0; }
+  header { padding: 0 16px; }
+  #detail-hero { padding: var(--header-h) 16px 32px; min-height: 60vh; }
+  #detail-body { padding: 0 16px 48px; }
+  #detail-title { font-size: 1.25rem; }
+  #detail-logo-img { max-width: 220px; max-height: 100px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="app">
+  <aside id="sidebar">
+    <button class="sidebar-brand" onclick="goHome()">LOBBY</button>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="series" onclick="switchTab('series')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z"/></svg>
+        Serie TV
+      </button>
+      <button class="nav-item" data-tab="movies" onclick="switchTab('movies')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+        Film
+      </button>
+    </nav>
+  </aside>
+  <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <div id="main">
+    <!-- ── Browse ── -->
+    <div id="page-browse">
+      <header>
+        <button id="menu-btn" onclick="toggleSidebar()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <h1 class="page-title" id="page-title">Serie TV</h1>
+        <div class="spacer"></div>
+        <div class="search-wrap">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="search" type="text" placeholder="Cerca titolo…" oninput="onSearchInput()" autocomplete="off">
+          <button id="search-clear" onclick="clearSearch()" style="display:none">×</button>
+        </div>
+      </header>
+
+      <div id="filter-bar">
+        <div class="filter-group">
+          <label>Anno</label>
+          <select id="release-year" onchange="renderGrid()">
+            <option value="">Tutti</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Ordina</label>
+          <select id="sort-by">
+            <option value="year-desc" selected>Uscita ↓</option>
+            <option value="year-asc">Uscita ↑</option>
+            <option value="title-asc">Titolo A-Z</option>
+            <option value="title-desc">Titolo Z-A</option>
+            <option value="rating-desc">Rating ↓</option>
+            <option value="rating-asc">Rating ↑</option>
+          </select>
+        </div>
+        <span id="count-badge"></span>
+      </div>
+
+      <div id="spinner-container" style="display:none">
+        <div class="spinner"></div>
+      </div>
+
+      <div id="state-error" class="state-box" style="display:none">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <p id="error-msg">Qualcosa è andato storto. Riprova o controlla la connessione.</p>
+        <button onclick="loadData()">Riprova</button>
+      </div>
+      <div id="state-empty" class="state-box" style="display:none">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" width="48" height="48"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <p>La ricerca non ha prodotto risultati. Prova a modificare i filtri.</p>
+        <button onclick="resetFilters()">Azzera filtri</button>
+      </div>
+
+      <div id="grid" style="display:none"></div>
+      <footer id="footer">Andrea Beggi — 2026</footer>
+    </div>
+
+    <!-- ── Detail ── -->
+    <div id="page-detail" style="display:none">
+      <header>
+        <button id="back-btn" onclick="goBack()">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          Indietro
+        </button>
+      </header>
+
+      <div id="detail-hero">
+        <div id="detail-backdrop"></div>
+        <div id="detail-header">
+          <div id="detail-poster">
+            <img id="detail-poster-img" src="" alt="" style="display:none">
+            <div id="detail-poster-ph" class="poster-placeholder" style="display:none"></div>
+          </div>
+          <div id="detail-info">
+            <img id="detail-logo-img" src="" alt="" style="display:none">
+            <h1 id="detail-title"></h1>
+            <div id="detail-meta"></div>
+            <div id="detail-genres"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="detail-body">
+        <div id="detail-overview">
+          <h2>Trama</h2>
+          <p id="detail-plot"></p>
+        </div>
+        <div id="detail-facts">
+          <h2>Info</h2>
+          <dl id="detail-facts-list"></dl>
+        </div>
+        <div id="detail-cast">
+          <h2>Cast</h2>
+          <div class="cast-carousel-wrap">
+            <button class="cast-arrow cast-arrow-left" onclick="scrollCast(-1)" aria-label="Scorri a sinistra">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div id="cast-grid"></div>
+            <button class="cast-arrow cast-arrow-right" onclick="scrollCast(1)" aria-label="Scorri a destra">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let allMovies = [];
+let allSeries = [];
+let currentTab = 'series';
+let renderKey = 0;
+let searchTimer = null;
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function show(id)  { document.getElementById(id).style.display = ''; }
+function hide(id)  { document.getElementById(id).style.display = 'none'; }
+function blockEl(id) { document.getElementById(id).style.display = 'block'; }
+
+function onSearchInput() {
+  const input = document.getElementById('search');
+  const btn = document.getElementById('search-clear');
+  btn.style.display = input.value ? 'flex' : 'none';
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(renderGrid, 300);
+}
+
+function clearSearch() {
+  document.getElementById('search').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  document.getElementById('search').focus();
+  renderGrid();
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
+function goHome() {
+  if (currentTab !== 'series') switchTab('series');
+  else showBrowse();
+  if (history.state && history.state.page === 'detail') {
+    history.pushState({page:'browse'}, '', '#browse');
+  }
+}
+
+// ── Tab ───────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('search').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  document.getElementById('release-year').value = '';
+  document.getElementById('sort-by').value = 'year-desc';
+  updateSortIndicator();
+  document.getElementById('page-title').textContent = tab === 'movies' ? 'Film' : 'Serie TV';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+  if (window.innerWidth < 1024) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
+  if (allMovies.length) populateYearSelect();
+  showBrowse();
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+function startProgress() {
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = '0';
+  bar.style.opacity = '1';
+  requestAnimationFrame(() => { bar.style.width = '30%'; });
+}
+function finishProgress() {
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = '100%';
+  setTimeout(() => { bar.style.opacity = '0'; }, 400);
+}
+function failProgress() {
+  document.getElementById('progress-bar').style.opacity = '0';
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────────
+async function loadData() {
+  const cached = localStorage.getItem('lobby-cache');
+  if (cached) {
+    try {
+      const {movies, series, ts} = JSON.parse(cached);
+      if (Date.now() - ts < 3600000) {
+        allMovies = movies;
+        allSeries = series;
+        hide('spinner-container');
+        populateYearSelect();
+        renderGrid();
+        startProgress();
+        setTimeout(() => {
+          refreshCache();
+        }, 50);
+        return;
+      }
+    } catch(_) {}
+  }
+
+  blockEl('spinner-container');
+  ['state-error','state-empty','grid'].forEach(hide);
+  startProgress();
+
+  try {
+    const [mRes, sRes] = await Promise.all([
+      fetch('/api/movies'),
+      fetch('/api/series'),
+    ]);
+    if (!mRes.ok) throw new Error(`Film: HTTP ${mRes.status}`);
+    if (!sRes.ok) throw new Error(`Serie TV: HTTP ${sRes.status}`);
+    allMovies = await mRes.json();
+    allSeries = await sRes.json();
+    localStorage.setItem('lobby-cache', JSON.stringify({movies: allMovies, series: allSeries, ts: Date.now()}));
+    hide('spinner-container');
+    finishProgress();
+    populateYearSelect();
+    renderGrid();
+  } catch(e) {
+    hide('spinner-container');
+    failProgress();
+    show('state-error');
+    blockEl('state-error');
+    document.getElementById('error-msg').textContent = e.message || 'Qualcosa è andato storto. Riprova o controlla la connessione.';
+  }
+}
+
+async function refreshCache() {
+  try {
+    const [mRes, sRes] = await Promise.all([
+      fetch('/api/movies'),
+      fetch('/api/series'),
+    ]);
+    if (!mRes.ok || !sRes.ok) return;
+    allMovies = await mRes.json();
+    allSeries = await sRes.json();
+    localStorage.setItem('lobby-cache', JSON.stringify({movies: allMovies, series: allSeries, ts: Date.now()}));
+    finishProgress();
+    populateYearSelect();
+    renderGrid();
+  } catch(_) {
+    failProgress();
+  }
+}
+
+function populateYearSelect() {
+  const data = currentTab === 'movies' ? allMovies : allSeries;
+  const years = [...new Set(data.map(i => i.year).filter(y => y))].sort((a,b) => b-a);
+  const select = document.getElementById('release-year');
+  const cur = select.value;
+  if (years.length === 0) {
+    select.innerHTML = '<option value="" disabled>Nessun anno disponibile</option>';
+  } else {
+    select.innerHTML = '<option value="">Tutti</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+  }
+  if (cur) select.value = cur;
+}
+
+function updateSortIndicator() {
+  const sel = document.getElementById('sort-by');
+  sel.classList.toggle('filtered', sel.value !== 'year-desc');
+}
+
+document.getElementById('sort-by').addEventListener('change', function() {
+  updateSortIndicator();
+  renderGrid();
+});
+
+function resetFilters() {
+  document.getElementById('search').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  document.getElementById('release-year').value = '';
+  document.getElementById('sort-by').value = 'year-desc';
+  updateSortIndicator();
+  renderGrid();
+}
+
+// ── Routing ────────────────────────────────────────────────────────────────────
+function navigateTo(page, params) {
+  if (page === 'detail') {
+    sessionStorage.setItem('lobby-scroll', window.scrollY);
+    showDetail(params.type, params.id);
+    history.pushState({page:'detail', type:params.type, id:params.id}, '', '#detail');
+  } else {
+    showBrowse();
+    history.pushState({page:'browse'}, '', '#browse');
+  }
+}
+
+function goBack() {
+  if (history.state && history.state.page === 'detail') {
+    history.back();
+  } else {
+    showBrowse();
+  }
+}
+
+window.addEventListener('popstate', function(e) {
+  if (e.state && e.state.page === 'detail') {
+    showDetail(e.state.type, e.state.id);
+  } else {
+    showBrowse();
+  }
+});
+
+// ── Page show/hide ────────────────────────────────────────────────────────────
+function showBrowse() {
+  document.getElementById('app').classList.remove('detail-mode');
+  hide('page-detail');
+  show('page-browse');
+  renderGrid();
+  const saved = sessionStorage.getItem('lobby-scroll');
+  if (saved) {
+    sessionStorage.removeItem('lobby-scroll');
+    requestAnimationFrame(() => window.scrollTo(0, parseInt(saved)));
+  }
+}
+
+function showDetail(type, id) {
+  const data = type === 'movies' ? allMovies : allSeries;
+  const item = data.find(i => i.id === id);
+  if (!item) { showBrowse(); return; }
+
+  document.getElementById('app').classList.add('detail-mode');
+  hide('page-browse');
+  show('page-detail');
+
+  // Backdrop
+  const backdrop = document.getElementById('detail-backdrop');
+  backdrop.style.backgroundImage = item.fanart ? `url('${item.fanart}')` : '';
+
+  // Poster
+  const img = document.getElementById('detail-poster-img');
+  const ph  = document.getElementById('detail-poster-ph');
+  if (item.poster) {
+    img.src = item.poster;
+    img.alt = item.title;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+    img.onerror = function() {
+      img.style.display = 'none';
+      ph.style.display = 'flex';
+      ph.textContent = item.title;
+    };
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'flex';
+    ph.textContent = item.title;
+  }
+
+  // Logo or title
+  const logoImg = document.getElementById('detail-logo-img');
+  const titleEl = document.getElementById('detail-title');
+  if (item.logo) {
+    logoImg.src = item.logo;
+    logoImg.alt = item.title;
+    logoImg.style.display = 'block';
+    titleEl.style.display = 'none';
+    logoImg.onerror = function() {
+      logoImg.style.display = 'none';
+      titleEl.style.display = 'block';
+      titleEl.textContent = item.title;
+    };
+  } else {
+    logoImg.style.display = 'none';
+    titleEl.style.display = 'block';
+    titleEl.textContent = item.title;
+  }
+
+  // Meta badges
+  const meta = document.getElementById('detail-meta');
+  const parts = [];
+  if (item.year) parts.push(`<span class="detail-badge year">${item.year}</span>`);
+  if (item.certification) parts.push(`<span class="detail-badge cert">${esc(item.certification)}</span>`);
+  if (item.runtime) parts.push(`<span class="detail-badge runtime">${item.runtime} min</span>`);
+  if (item.seasons) parts.push(`<span class="detail-badge seasons">${item.seasons} stagion${item.seasons===1?'e':'i'}</span>`);
+  if (item.rating && item.rating > 0) {
+    parts.push(`<span class="detail-badge rating">
+      <svg viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+      ${item.rating}
+    </span>`);
+  }
+  if (item.trailers && item.trailers.length > 0) {
+    parts.push(`<a id="detail-trailer-btn" href="${esc(item.trailers[0])}" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Trailer
+    </a>`);
+  }
+  meta.innerHTML = parts.join('');
+
+  // Genres
+  const genresEl = document.getElementById('detail-genres');
+  genresEl.innerHTML = (item.genres||[]).map(g => `<span class="detail-genre">${esc(g)}</span>`).join('');
+
+  // Overview
+  document.getElementById('detail-plot').textContent = item.overview || 'Nessuna trama disponibile.';
+
+  // Facts panel
+  const facts = [];
+  if (item.studio)   facts.push({label:'Studio', value:esc(item.studio)});
+  if (item.network)  facts.push({label:'Network', value:esc(item.network)});
+  if (item.releaseDate) facts.push({label:'Data uscita', value:formatDate(item.releaseDate)});
+  if (item.status)   facts.push({label:'Stato', value:esc(item.status)});
+  const eids = item.externalIds || {};
+  if (eids.Tmdb) {
+    const path = currentTab === 'movies' ? 'movie' : 'tv';
+    facts.push({label:'TMDB', value:`<a href="https://www.themoviedb.org/${path}/${eids.Tmdb}" target="_blank" rel="noopener" style="color:var(--accent)">${eids.Tmdb}</a>`});
+  }
+  if (eids.Tvdb) {
+    facts.push({label:'TVDB', value:`<a href="https://www.thetvdb.com/series/${eids.Tvdb}" target="_blank" rel="noopener" style="color:var(--accent)">${eids.Tvdb}</a>`});
+  }
+  if (eids.Imdb) {
+    facts.push({label:'IMDb', value:`<a href="https://www.imdb.com/title/${eids.Imdb}" target="_blank" rel="noopener" style="color:var(--accent)">${eids.Imdb}</a>`});
+  }
+  document.getElementById('detail-facts-list').innerHTML = facts.map(f =>
+    `<div class="fact-row"><span class="fact-label">${f.label}</span><span class="fact-value">${f.value}</span></div>`
+  ).join('');
+
+  // Cast
+  const castGrid = document.getElementById('cast-grid');
+  if (item.cast && item.cast.length > 0) {
+    document.getElementById('detail-cast').style.display = '';
+    castGrid.innerHTML = item.cast.map(p => {
+      const initials = (p.name||'?').charAt(0).toUpperCase();
+      const photo = p.image
+        ? `<img class="cast-photo" src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+           ><div class="cast-ph-placeholder" style="display:none">${initials}</div>`
+        : `<div class="cast-ph-placeholder">${initials}</div>`;
+      return `<div class="cast-card">
+        ${photo}
+        <div class="cast-name">${esc(p.name)}</div>
+        <div class="cast-role">${esc(p.role||p.type||'')}</div>
+      </div>`;
+    }).join('');
+  } else {
+    document.getElementById('detail-cast').style.display = 'none';
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function scrollCast(dir) {
+  const grid = document.getElementById('cast-grid');
+  const amount = grid.clientWidth * 0.5;
+  grid.scrollBy({ left: dir * amount, behavior: 'smooth' });
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return d;
+  return date.toLocaleDateString('it-IT', {year:'numeric', month:'long', day:'numeric'});
+}
+
+// ── Grid render ───────────────────────────────────────────────────────────────
+function renderGrid() {
+  const query = document.getElementById('search').value.trim().toLowerCase();
+  const data  = currentTab === 'movies' ? allMovies : allSeries;
+  ++renderKey;
+
+  let filtered = [...data];
+
+  // Text search
+  if (query) {
+    filtered = filtered.filter(i =>
+      i.title.toLowerCase().includes(query)
+    );
+  }
+
+  // Year filter
+  const yearVal = document.getElementById('release-year').value;
+  if (yearVal) {
+    const yr = parseInt(yearVal, 10);
+    if (!isNaN(yr)) {
+      filtered = filtered.filter(i => i.year === yr);
+    }
+  }
+
+  // Sort
+  const sortVal = document.getElementById('sort-by').value;
+  const [sortField, sortDir] = sortVal.split('-');
+  filtered.sort((a, b) => {
+    let cmp = 0;
+    switch (sortField) {
+      case 'title':
+        cmp = (a.sortTitle || a.title || '').localeCompare(b.sortTitle || b.title || '');
+        break;
+      case 'year':
+        cmp = (a.year || 0) - (b.year || 0);
+        break;
+      case 'rating':
+        cmp = (a.rating || 0) - (b.rating || 0);
+        break;
+    }
+    return sortDir === 'desc' ? -cmp : cmp;
+  });
+
+  // Count badge
+  const badge = document.getElementById('count-badge');
+  badge.textContent = `${filtered.length} titol${filtered.length === 1 ? 'o' : 'i'}`;
+
+  const grid = document.getElementById('grid');
+
+  if (filtered.length === 0) {
+    grid.style.display = 'none';
+    show('state-empty');
+    blockEl('state-empty');
+    return;
+  }
+
+  hide('state-empty');
+  grid.style.display = 'grid';
+
+  const type = currentTab;
+  grid.innerHTML = filtered.map((item, idx) => {
+    const delay = Math.min(idx * 25, 500);
+    const src = item.poster ? esc(item.poster) : '';
+    const poster = src
+      ? `<img src="${src}" alt="${esc(item.title)}" loading="lazy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+         ><div class="poster-placeholder" style="display:none">${esc(item.title)}</div>`
+      : `<div class="poster-placeholder">${esc(item.title)}</div>`;
+
+    return `
+      <div class="card" style="animation-delay:${delay}ms"
+           onclick="navigateTo('detail',{type:'${type}',id:'${item.id}'})">
+        <div class="card-poster">
+          ${poster}
+          <div class="card-overlay">
+            <div class="card-title-overlay">${esc(item.title)}</div>
+          </div>
+        </div>
+        <div class="card-info">
+          <div class="card-title">${esc(item.title)}</div>
+          <div class="card-year">${item.year || ''}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
