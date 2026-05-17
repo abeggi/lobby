@@ -77,5 +77,3 @@ Tutto via variabili d'ambiente (il file `.env` viene caricato automaticamente):
 
 - L'app è inutile senza un'istanza Jellyfin raggiungibile.
 - Il proxy immagini è l'unico endpoint che nasconde intenzionalmente le credenziali dal browser.
-- Nessun test, nessun linting, nessuna CI.
-- `docs_url=None, redoc_url=None` — niente documentazione API auto-generata.
