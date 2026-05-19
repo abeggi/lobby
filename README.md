@@ -14,7 +14,7 @@ Un frontend FastAPI proxy per navigare la libreria di un server Jellyfin. Niente
 
 ## Screenshot
 
-![Sezione Film](doc/film.png)
+![Sezione Film](docs/film.png)
 
 *La schermata di navigazione della libreria film.*
 
