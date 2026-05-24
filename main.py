@@ -1,4 +1,5 @@
 import os
+import re
 import httpx
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
@@ -127,8 +128,14 @@ async def get_series():
 
 
 # ── Proxy immagini ─────────────────────────────────────────────────────────────
+ITEM_ID_PATTERN = re.compile(r"^[a-zA-Z0-9\-]+$")
+
+
 @app.get("/api/proxy/{item_id}/{img_type}")
 async def proxy_image(item_id: str, img_type: str):
+    if not ITEM_ID_PATTERN.match(item_id) or len(item_id) > 64:
+        raise HTTPException(400, "Invalid item ID format")
+
     if img_type == "poster":
         url    = f"{JELLYFIN_URL}/Items/{item_id}/Images/Primary"
         params = {"fillWidth": "400", "quality": "80"}
