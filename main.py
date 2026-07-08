@@ -14,7 +14,8 @@ _FIELDS = (
     "Overview,Genres,CommunityRating,OfficialRating,"
     "RunTimeTicks,Studios,ProductionYear,"
     "ImageTags,BackdropImageTags,ChildCount,Status,SortName,"
-    "PremiereDate,RemoteTrailers,People,ProviderIds"
+    "PremiereDate,RemoteTrailers,People,ProviderIds,"
+    "RecursiveItemCount"
 )
 
 _HEADERS = {"X-Emby-Token": JELLYFIN_KEY}
@@ -118,8 +119,9 @@ async def get_series():
             "genres":     s.get("Genres", []),
             "status":     s.get("Status"),
             "network":    studios[0]["Name"] if studios else None,
-            "seasons":    s.get("ChildCount"),
-            "rating":     round(float(s["CommunityRating"]), 1) if s.get("CommunityRating") else None,
+            "seasons":      s.get("ChildCount"),
+            "episodeCount": s.get("RecursiveItemCount"),
+            "rating":       round(float(s["CommunityRating"]), 1) if s.get("CommunityRating") else None,
             "trailers":   trailers,
             "cast":       _cast_list(s.get("People", [])),
             "externalIds": s.get("ProviderIds", {}),
@@ -162,6 +164,56 @@ async def proxy_image(item_id: str, img_type: str):
     ct = r.headers.get("content-type", "image/jpeg")
     cache_headers = {"Cache-Control": "public, max-age=86400"}
     return Response(content=r.content, media_type=ct, headers=cache_headers)
+
+
+# ── Series counts ────────────────────────────────────────────────────────────
+@app.get("/api/series/{series_id}/counts")
+async def series_counts(series_id: str):
+    if not ITEM_ID_PATTERN.match(series_id) or len(series_id) > 64:
+        raise HTTPException(400, "Invalid series ID")
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        try:
+            r = await client.get(
+                f"{JELLYFIN_URL}/Items",
+                headers=_HEADERS,
+                params={
+                    "ParentId": series_id,
+                    "IncludeItemTypes": "Season",
+                    "Recursive": "true",
+                    "SortBy": "IndexNumber",
+                    "SortOrder": "Ascending",
+                    "Fields": "IndexNumber",
+                },
+            )
+            r.raise_for_status()
+            body = r.json()
+            season_items = body.get("Items", [])
+            seasons = len(season_items)
+            seasonNumbers = [
+                s.get("IndexNumber")
+                for s in season_items
+                if s.get("IndexNumber") is not None
+            ]
+
+            r = await client.get(
+                f"{JELLYFIN_URL}/Items",
+                headers=_HEADERS,
+                params={
+                    "ParentId": series_id,
+                    "IncludeItemTypes": "Episode",
+                    "Recursive": "true",
+                    "Limit": "0",
+                },
+            )
+            r.raise_for_status()
+            episodes = r.json().get("TotalRecordCount", 0)
+        except httpx.RequestError as e:
+            raise HTTPException(502, f"Jellyfin irraggiungibile: {e}")
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(e.response.status_code, f"Jellyfin error: {e}")
+
+    return {"seasons": seasons, "episodes": episodes, "seasonNumbers": seasonNumbers}
 
 
 # ── SPA ───────────────────────────────────────────────────────────────────────
